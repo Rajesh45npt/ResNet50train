@@ -37,19 +37,19 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 # Set Directories
 # =============================================================================
 model_weight_path='partialModelweights.h5'
-train_dataset_dir = "/home/nic/rajesh_project/Final-Models"
-test_dataset_dir = "/home/nic/rajesh_project/Validation"
+train_dataset_dir = "/media/rose/Windows/Final-Models"
+test_dataset_dir = "/media/rose/Windows/Validation"
 
 
 # =============================================================================
 # Set variables
 # =============================================================================
 
-Trainable_layers_Number = 14
-TrainBatchSize = 30
-TestBatchSize = 30
+Trainable_layers_Number = 2
+TrainBatchSize = 10
+TestBatchSize = 10
 sgd = SGD(lr=1e-2, decay=1e-6,momentum=0.9, nesterov=True)
-adam = Adam(lr=0.001)
+adam = Adam(lr=0.1)
 
 
 # =============================================================================
@@ -57,7 +57,7 @@ adam = Adam(lr=0.001)
 # =============================================================================
 from resnet50 import ResNet50
 model = ResNet50()
-model.load_weights("resnet50_weights_tf_dim_ordering_tf_kernels.h5")
+model.load_weights("/media/rose/Windows/resnet50_weights_tf_dim_ordering_tf_kernels.h5")
 desiredOutputs = model.get_layer('flatten').output
 # desiredOutputs = Dropout(0.2)(desiredOutputs)
 # desiredOutputs = Dense(1000)(desiredOutputs)
@@ -65,7 +65,7 @@ desiredOutputs = model.get_layer('flatten').output
 desiredOutputs = Dense(10)(desiredOutputs)
 desiredOutputs = Activation('softmax')(desiredOutputs)
 partialModel = Model(model.inputs,desiredOutputs)
-partialModel.load_weights("partialModelweightsfile.h5")
+# partialModel.load_weights("partialModelweightsfile.h5")
 
 partialModel.summary()
 
@@ -155,7 +155,7 @@ TestImageDataGenerator = ImageDataGenerator().flow_from_directory(test_dataset_d
 # =============================================================================
 # Fit the Model and save the weights
 # =============================================================================
-TrainingResult = partialModel.fit_generator(TrainImageDataGenerator, steps_per_epoch=len(TrainImageDataGenerator), validation_data=TestImageDataGenerator, validation_steps=len(TestImageDataGenerator), shuffle=True, verbose=1, epochs=100)
+TrainingResult = partialModel.fit_generator(TrainImageDataGenerator, steps_per_epoch=10, validation_data=TestImageDataGenerator, validation_steps=len(TestImageDataGenerator), shuffle=True, verbose=1, epochs=20)
 
 partialModel.save_weights('partialModelweightsfile.h5')
 
@@ -179,3 +179,10 @@ plt.xlabel("epoch")
 plt.ylabel("Loss")
 plt.legend(['train','test'], loc='upper left')
 plt.show()
+
+
+TestTrainData = partialModel.evaluate_generator(TrainImageDataGenerator, verbose = 1)
+TestTestData = partialModel.evaluate_generator(TestImageDataGenerator, verbose = 1)
+
+print("Result on Train Data:"+ str(TestTrainData))
+print("Result on Test Data:" + str(TestTestData))
