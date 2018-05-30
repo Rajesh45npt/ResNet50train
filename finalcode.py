@@ -37,8 +37,8 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 # Set Directories
 # =============================================================================
 model_weight_path='partialModelweights.h5'
-train_dataset_dir = "/media/rose/Windows/Final-Models"
-test_dataset_dir = "/media/rose/Windows/Validation"
+train_dataset_dir = "/home/nic/rajesh_project/Final-Models"
+test_dataset_dir = "/home/nic/rajesh_project/Validation"
 
 
 # =============================================================================
@@ -46,8 +46,8 @@ test_dataset_dir = "/media/rose/Windows/Validation"
 # =============================================================================
 
 Trainable_layers_Number = 2
-TrainBatchSize = 4
-TestBatchSize = 4
+TrainBatchSize = 50
+TestBatchSize = 50
 sgd = SGD(lr=1e-2, decay=1e-6,momentum=0.9, nesterov=True)
 adam = Adam(lr=0.001)
 
@@ -55,7 +55,7 @@ adam = Adam(lr=0.001)
 # =============================================================================
 # Import Resnet Model and create newModel and loadweights
 # =============================================================================
-from resnet50 import ResNet50
+from resnet50 import ResNet50, preprocess_input
 model = ResNet50()
 # model.load_weights("/media/rose/Windows/resnet50_weights_tf_dim_ordering_tf_kernels.h5")
 desiredOutputs = model.get_layer('flatten').output
@@ -66,7 +66,7 @@ desiredOutputs = Dense(10)(desiredOutputs)
 desiredOutputs = Activation('softmax')(desiredOutputs)
 partialModel = Model(model.inputs,desiredOutputs)
 #print(partialModel.weights)
-partialModel.load_weights("fulltrainweightsfile.h5")
+partialModel.load_weights("fulltrainweightsfile1.h5")
 
 partialModel.summary()
 
@@ -149,17 +149,17 @@ encoder.fit(image_label_list)
 # ImageGenerator for train and test
 # =============================================================================
 from keras.preprocessing.image import ImageDataGenerator
-TrainImageDataGenerator = ImageDataGenerator(validation_split=0.3).flow_from_directory(train_dataset_dir, target_size=(224,224), classes=list(encoder.classes_), batch_size=TrainBatchSize)
-TestImageDataGenerator = ImageDataGenerator().flow_from_directory(test_dataset_dir, target_size=(224,224), classes=list(encoder.classes_), batch_size=TestBatchSize)
+TrainImageDataGenerator = ImageDataGenerator(preprocessing_function=preprocess_input).flow_from_directory(train_dataset_dir, target_size=(224,224), classes=list(encoder.classes_), batch_size=TrainBatchSize)
+TestImageDataGenerator = ImageDataGenerator(preprocessing_function=preprocess_input).flow_from_directory(test_dataset_dir, target_size=(224,224), classes=list(encoder.classes_), batch_size=TestBatchSize)
 
 
 
 # =============================================================================
 # Fit the Model and save the weights
 # =============================================================================
-TrainingResult = partialModel.fit_generator(TrainImageDataGenerator, steps_per_epoch=len(TrainImageDataGenerator), validation_data=TestImageDataGenerator, validation_steps=len(TestImageDataGenerator), shuffle=True, verbose=1, epochs=11)
+TrainingResult = partialModel.fit_generator(TrainImageDataGenerator, steps_per_epoch=len(TrainImageDataGenerator), validation_data=TestImageDataGenerator, validation_steps=len(TestImageDataGenerator), shuffle=True, verbose=1, epochs=20, workers = 12, use_multiprocessing=True, max_queue_size = 24)
 
-partialModel.save_weights('fulltrainweightsfile111.h5')
+partialModel.save_weights('fulltrainweightsfile2.h5')
 
 
 # =============================================================================
@@ -183,8 +183,8 @@ plt.legend(['train','test'], loc='upper left')
 plt.show()
 
 
-TestTrainData = partialModel.evaluate_generator(TrainImageDataGenerator, verbose = 1)
-TestTestData = partialModel.evaluate_generator(TestImageDataGenerator, verbose = 1)
+TestTrainData = partialModel.evaluate_generator(TrainImageDataGenerator, verbose = 1,  workers = 12, use_multiprocessing=True, max_queue_size = 24)
+TestTestData = partialModel.evaluate_generator(TestImageDataGenerator, verbose = 1,  workers = 12, use_multiprocessing=True, max_queue_size = 24)
 
 print("Result on Train Data:"+ str(TestTrainData))
 print("Result on Test Data:" + str(TestTestData))
