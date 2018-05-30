@@ -66,7 +66,7 @@ desiredOutputs = Dense(10)(desiredOutputs)
 desiredOutputs = Activation('softmax')(desiredOutputs)
 partialModel = Model(model.inputs,desiredOutputs)
 #print(partialModel.weights)
-#partialModel.load_weights("weights201805261000.h5")
+partialModel.load_weights("fulltrainweightsfile.h5")
 
 partialModel.summary()
 
@@ -157,9 +157,9 @@ TestImageDataGenerator = ImageDataGenerator().flow_from_directory(test_dataset_d
 # =============================================================================
 # Fit the Model and save the weights
 # =============================================================================
-TrainingResult = partialModel.fit_generator(TrainImageDataGenerator, steps_per_epoch=len(TrainImageDataGenerator), validation_data=TestImageDataGenerator, validation_steps=len(TestImageDataGenerator), shuffle=True, verbose=1, epochs=7)
+TrainingResult = partialModel.fit_generator(TrainImageDataGenerator, steps_per_epoch=len(TrainImageDataGenerator), validation_data=TestImageDataGenerator, validation_steps=len(TestImageDataGenerator), shuffle=True, verbose=1, epochs=11)
 
-partialModel.save_weights('fulltrainweightsfile.h5')
+partialModel.save_weights('fulltrainweightsfile111.h5')
 
 
 # =============================================================================
